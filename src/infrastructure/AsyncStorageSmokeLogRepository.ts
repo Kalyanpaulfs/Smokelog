@@ -54,4 +54,20 @@ export class AsyncStorageSmokeLogRepository implements SmokeLogRepository {
       throw new StorageError(`Failed to save log: ${(error as Error).message}`);
     }
   }
+
+  async deleteLog(id: string): Promise<void> {
+    try {
+      const currentLogs = await this.getLogs();
+      const updatedLogs = currentLogs.filter(log => log.id !== id);
+      
+      const success = await StorageService.setObject(StorageKeys.SMOKE_LOGS, updatedLogs);
+      
+      if (!success) {
+        throw new StorageError('AsyncStorage failed to write object to disk.');
+      }
+    } catch (error) {
+      if (error instanceof StorageError) throw error;
+      throw new StorageError(`Failed to delete log: ${(error as Error).message}`);
+    }
+  }
 }

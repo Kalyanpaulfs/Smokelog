@@ -1,28 +1,19 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { Card } from '../../ui/Card';
 import { Text } from '../../ui/Text';
 import { useTheme } from '../../../hooks/use-theme';
-import { Spacing } from '../../../theme';
+import { Spacing, BorderRadius } from '../../../theme';
 import { LoadingIndicator } from '../../ui/LoadingIndicator';
-import { Icon } from '../../ui/Icon';
+import { Ionicons } from '@expo/vector-icons';
 
 export interface ProgressCardProps {
-  /** Whether the component is processing data */
   isLoading?: boolean;
-  /** Whether no tracking history exists */
   isEmpty?: boolean;
-  /** Number of smokes logged today */
   smokedToday?: number;
-  /** Daily average */
   average?: number;
-  /** Custom container style */
   style?: ViewStyle;
 }
 
-/**
- * Feature component representing today's progress vs average.
- */
 export const ProgressCard: React.FC<ProgressCardProps> = React.memo(({
   isLoading,
   isEmpty,
@@ -34,39 +25,68 @@ export const ProgressCard: React.FC<ProgressCardProps> = React.memo(({
 
   if (isLoading) {
     return (
-      <Card variant="filled" style={[styles.container, style]}>
+      <View style={[styles.container, style]}>
         <LoadingIndicator size="small" />
-      </Card>
+      </View>
     );
   }
 
   if (isEmpty) {
     return (
-      <Card variant="filled" style={[styles.container, style]}>
+      <View style={[styles.container, style, { backgroundColor: colors.surfaceHighlight }]}>
         <View style={styles.emptyContainer}>
-          <Icon name="bar-chart-2" size="xl" color="textSecondary" />
-          <Text variant="body" color={colors.textSecondary} align="center" style={styles.emptyText}>
-            Progress metrics will appear here once you log your first activity.
+          <Ionicons name="bar-chart-outline" size={24} color={colors.textSecondary} />
+          <Text variant="caption" color={colors.textSecondary} align="center" style={styles.emptyText}>
+            Data will appear once you log your first activity.
           </Text>
         </View>
-      </Card>
+      </View>
     );
   }
 
+  const isBelow = smokedToday < average && average > 0;
+  const isAbove = smokedToday > average && average > 0;
+  const trendColor = isBelow ? colors.success : isAbove ? colors.warning : colors.textSecondary;
+  const trendIcon = isBelow ? 'trending-down' : isAbove ? 'trending-up' : 'remove';
+  const trendText = isBelow ? 'Below Average' : isAbove ? 'Above Average' : 'On Track';
+
   return (
-    <Card variant="filled" style={[styles.container, style]}>
-      <View style={styles.row}>
-        <View style={styles.metricContainer}>
-          <Text variant="caption" color={colors.textSecondary}>Today</Text>
-          <Text variant="headline" style={styles.value}>{smokedToday}</Text>
+    <View style={[styles.container, style, { backgroundColor: colors.surface }]}>
+      
+      <View style={styles.metricBlock}>
+        <View style={styles.valueRow}>
+          <Ionicons name="flame" size={24} color={colors.primary} style={styles.iconOffset} />
+          <Text variant="display" color={colors.textPrimary} style={styles.numberValue}>
+            {smokedToday}
+          </Text>
         </View>
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        <View style={styles.metricContainer}>
-          <Text variant="caption" color={colors.textSecondary}>Average</Text>
-          <Text variant="headline" style={styles.value}>{average}</Text>
-        </View>
+        <Text variant="caption" color={colors.textSecondary} style={styles.label}>
+          Logged Today
+        </Text>
       </View>
-    </Card>
+
+      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+      <View style={styles.metricBlock}>
+        <View style={styles.valueRow}>
+          <Text variant="display" color={colors.textPrimary} style={styles.numberValue}>
+            {average}
+          </Text>
+        </View>
+        <Text variant="caption" color={colors.textSecondary} style={styles.label}>
+          Daily Average
+        </Text>
+        {average > 0 && (
+          <View style={styles.trendRow}>
+            <Ionicons name={trendIcon} size={12} color={trendColor} style={{ marginRight: 4 }} />
+            <Text variant="overline" color={trendColor} style={styles.trendText}>
+              {trendText}
+            </Text>
+          </View>
+        )}
+      </View>
+
+    </View>
   );
 });
 
@@ -74,32 +94,55 @@ ProgressCard.displayName = 'ProgressCard';
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
-  },
-  row: {
+    marginHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  metricContainer: {
-    alignItems: 'center',
+  metricBlock: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
-  value: {
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 48, // Fixed height ensures numbers stay perfectly aligned regardless of icons
+    marginBottom: Spacing.xs,
+  },
+  iconOffset: {
+    marginRight: 8,
+    marginTop: 4, // Slight visual adjustment to align with large text baseline
+  },
+  numberValue: {
+    lineHeight: 48,
+  },
+  label: {
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  trendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: Spacing.xs,
+  },
+  trendText: {
+    fontSize: 9,
   },
   divider: {
     width: 1,
-    height: 40,
+    marginHorizontal: Spacing.md,
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.xl,
+    width: '100%',
   },
   emptyText: {
-    marginTop: Spacing.md,
-    paddingHorizontal: Spacing.xl,
+    marginTop: Spacing.sm,
   }
 });

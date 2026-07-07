@@ -1,31 +1,24 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Card } from '../../ui/Card';
 import { Text } from '../../ui/Text';
 import { useTheme } from '../../../hooks/use-theme';
 import { Spacing, BorderRadius } from '../../../theme';
+import { Ionicons } from '@expo/vector-icons';
 import { MilestoneService } from '../../../domain/MilestoneService';
 import { formatElapsedTime } from '../../../utils/time';
 
 export interface HealthMilestoneCardProps {
-  /** The raw ticking integer passed directly from the TimerContainer owner */
   elapsedMilliseconds: number;
-  /** Whether the user has zero logs */
   isEmpty?: boolean;
 }
 
-/**
- * Renders the user's progress through deterministic health milestones.
- * Receives the ticking elapsed time via props to avoid duplicate hook logic.
- */
 export const HealthMilestoneCard: React.FC<HealthMilestoneCardProps> = React.memo(({
   elapsedMilliseconds,
   isEmpty,
 }) => {
   const { colors } = useTheme();
 
-  // Fast pure computation that derives completely from the ticking integer
-  const { currentMilestone, nextMilestone, progress, remainingTime } = useMemo(
+  const { currentMilestone, nextMilestone, remainingTime } = useMemo(
     () => MilestoneService.calculateMilestoneProgress(elapsedMilliseconds),
     [elapsedMilliseconds]
   );
@@ -33,37 +26,59 @@ export const HealthMilestoneCard: React.FC<HealthMilestoneCardProps> = React.mem
   if (isEmpty) return null;
 
   return (
-    <Card variant="outlined" style={styles.container} accessible={true}>
+    <View style={styles.container} accessible={true}>
       <Text variant="headline" style={styles.title}>Health Journey</Text>
       
-      {currentMilestone && (
-        <Text variant="body" style={styles.current}>
-          Achieved: <Text style={{ color: colors.primary }}>{currentMilestone.label}</Text>
-        </Text>
-      )}
+      <View style={styles.timelineContainer}>
+        {/* Vertical connecting line */}
+        <View style={[styles.timelineLine, { backgroundColor: colors.border }]} />
 
-      {nextMilestone ? (
-        <View style={styles.nextContainer} accessibilityLabel={`Next milestone: ${nextMilestone.label} in ${formatElapsedTime(remainingTime)}`}>
-          <View style={styles.nextHeader}>
-            <Text variant="caption" color={colors.textSecondary}>Next: {nextMilestone.label}</Text>
-            <Text variant="caption" color={colors.textSecondary} importantForAccessibility="no">{formatElapsedTime(remainingTime)}</Text>
+        {/* Achieved Milestone */}
+        {currentMilestone && (
+          <View style={styles.timelineNode}>
+            <View style={[styles.iconWrapper, { backgroundColor: colors.success, shadowColor: colors.success }]}>
+              <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+            </View>
+            <View style={styles.nodeContent}>
+              <Text variant="caption" color={colors.textSecondary} style={styles.nodeLabel}>
+                Achieved
+              </Text>
+              <Text variant="body" color={colors.textPrimary}>
+                {currentMilestone.label}
+              </Text>
+            </View>
           </View>
-          
-          <View style={[styles.progressBarBg, { backgroundColor: colors.border }]} importantForAccessibility="no">
-            <View 
-              style={[
-                styles.progressBarFill, 
-                { backgroundColor: colors.primary, width: `${progress}%` }
-              ]} 
-            />
+        )}
+
+        {/* Next Locked Milestone */}
+        {nextMilestone ? (
+          <View style={[styles.timelineNode, { marginTop: Spacing.xl }]}>
+            <View style={[styles.iconWrapper, { backgroundColor: colors.surfaceHighlight }]}>
+              <Ionicons name="lock-closed" size={14} color={colors.textSecondary} />
+            </View>
+            <View style={styles.nodeContent}>
+              <Text variant="caption" color={colors.textSecondary} style={styles.nodeLabel}>
+                Unlocks in {formatElapsedTime(remainingTime)}
+              </Text>
+              <Text variant="body" style={styles.description}>
+                {nextMilestone.description}
+              </Text>
+            </View>
           </View>
-        </View>
-      ) : (
-        <Text variant="body" color={colors.success} style={styles.complete}>
-          You have reached all early milestones!
-        </Text>
-      )}
-    </Card>
+        ) : (
+          <View style={[styles.timelineNode, { marginTop: Spacing.xl }]}>
+            <View style={[styles.iconWrapper, { backgroundColor: colors.success }]}>
+              <Ionicons name="star" size={14} color="#FFFFFF" />
+            </View>
+            <View style={styles.nodeContent}>
+              <Text variant="body" color={colors.success}>
+                You have reached all early milestones!
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
+    </View>
   );
 });
 
@@ -71,34 +86,49 @@ HealthMilestoneCard.displayName = 'HealthMilestoneCard';
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: Spacing.lg,
+    marginHorizontal: Spacing.xl,
     marginTop: Spacing.lg,
-    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   title: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xl,
   },
-  current: {
-    marginBottom: Spacing.lg,
+  timelineContainer: {
+    position: 'relative',
+    paddingLeft: 8,
   },
-  nextContainer: {
-    marginTop: Spacing.xs,
+  timelineLine: {
+    position: 'absolute',
+    left: 23, // Center of the 32px icon + 8px padding
+    top: 32,
+    bottom: 32,
+    width: 2,
+    opacity: 0.5,
   },
-  nextHeader: {
+  timelineNode: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.sm,
+    alignItems: 'flex-start',
   },
-  progressBarBg: {
-    height: 8,
-    borderRadius: BorderRadius.round,
-    overflow: 'hidden',
+  iconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+    zIndex: 1, // Stay above the line
+    elevation: 2,
   },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: BorderRadius.round,
+  nodeContent: {
+    flex: 1,
+    paddingTop: 4, // Align text with center of icon
   },
-  complete: {
-    marginTop: Spacing.md,
-  }
+  nodeLabel: {
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  description: {
+    lineHeight: 20,
+  },
 });

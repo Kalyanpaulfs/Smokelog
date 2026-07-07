@@ -1,41 +1,100 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Alert, Pressable } from 'react-native';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { SettingsGroup } from '../../components/layout/SettingsGroup';
-import { useAppStore, ThemeMode } from '../../store';
+import { PromptModal } from '../../components/ui/PromptModal';
+import { ThemeMode, useAppStore } from '../../store';
+import { useTheme } from '../../hooks/use-theme';
+import { Ionicons } from '@expo/vector-icons';
 import { Spacing } from '../../theme';
 import { FadeIn } from '../../components/animations/FadeIn';
+import { BackupService } from '../../domain/BackupService';
+import { useSmokeStore } from '../../store/smokeStore';
 
 export default function SettingsScreen() {
-  const { themeMode, setThemeMode } = useAppStore();
+  const { themeMode, setThemeMode, notificationsEnabled, toggleNotifications, costPerCigarette, setCostPerCigarette } = useAppStore();
+  const clearAllData = useSmokeStore(state => state.clearAllData);
+  const { isDark, colors } = useTheme();
+
+  const [isPromptVisible, setPromptVisible] = useState(false);
 
   const handleThemeChange = () => {
-    // Basic cycle for now: system -> light -> dark -> system
-    const nextMode: Record<ThemeMode, ThemeMode> = {
-      system: 'light',
-      light: 'dark',
-      dark: 'system',
-    };
-    setThemeMode(nextMode[themeMode]);
+    // Toggle between light and dark
+    setThemeMode(isDark ? 'light' : 'dark');
   };
 
   const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
+  const handleExport = async () => {
+    const success = await BackupService.exportData();
+    if (!success) {
+      Alert.alert('Export Failed', 'Could not save your backup file.');
+    }
+  };
+
+  const handleImport = async () => {
+    const { success, message } = await BackupService.importData();
+    Alert.alert(success ? 'Success' : 'Import Failed', message);
+  };
+
+  const handleResetData = () => {
+    Alert.alert(
+      'Reset All Data',
+      'Are you sure you want to permanently delete all tracking history? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete Everything', 
+          style: 'destructive',
+          onPress: async () => {
+            await clearAllData();
+            Alert.alert('Success', 'All data has been reset.');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleSaveCost = (value: string) => {
+    // Parse the value carefully
+    let cost = parseFloat(value.replace(/[^0-9.]/g, ''));
+    if (isNaN(cost)) cost = 0;
+    
+    setCostPerCigarette(cost);
+    setPromptVisible(false);
+  };
+
   return (
     <ScreenContainer scrollable withSafeArea={false}>
-      <ScreenHeader title="Settings" />
+      <ScreenHeader 
+        title="Settings" 
+        rightElement={
+          <Pressable 
+            onPress={handleThemeChange} 
+            hitSlop={8}
+            style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Ionicons 
+              name={isDark ? 'sunny' : 'moon'} 
+              size={24} 
+              color={isDark ? colors.warning : colors.textSecondary} 
+            />
+          </Pressable>
+        }
+      />
       
       <FadeIn delay={100} style={styles.content}>
         <SettingsGroup
-          title="Appearance"
+          title="Financials"
           items={[
             {
-              title: 'Theme',
-              subtitle: 'System, Light, or Dark',
-              icon: 'moon',
-              value: capitalize(themeMode),
-              onPress: handleThemeChange,
+              title: 'Cost per Cigarette',
+              subtitle: 'Used to calculate money smoked away',
+              icon: 'dollar-sign',
+              value: costPerCigarette > 0 ? `₹${costPerCigarette.toFixed(2)}` : 'Not Set',
+              showChevron: true,
+              onPress: () => setPromptVisible(true),
             },
           ]}
           style={styles.group}
@@ -45,11 +104,12 @@ export default function SettingsScreen() {
           title="Notifications"
           items={[
             {
-              title: 'Daily Reminders',
-              subtitle: 'Get notified to log your activity',
-              icon: 'bell',
-              value: 'Off',
-              onPress: () => {}, // Disabled until logic phase
+              title: 'Achievement Alerts',
+              subtitle: 'Get notified when you unlock a milestone',
+              icon: 'award',
+              value: notificationsEnabled ? 'On' : 'Off',
+              showChevron: true,
+              onPress: toggleNotifications,
             },
           ]}
           style={styles.group}
@@ -59,41 +119,25 @@ export default function SettingsScreen() {
           title="Data Management"
           items={[
             {
-              title: 'Export Data',
-              subtitle: 'Save your history as CSV',
+              title: 'Backup Data',
+              subtitle: 'Save your history as a JSON file',
               icon: 'download',
-              onPress: () => {}, // Disabled until logic phase
+              showChevron: true,
+              onPress: handleExport,
+            },
+            {
+              title: 'Restore Data',
+              subtitle: 'Load history from a previous backup',
+              icon: 'upload',
+              showChevron: true,
+              onPress: handleImport,
             },
           ]}
           style={styles.group}
         />
 
-        <SettingsGroup
-          title="About Smokelog"
-          items={[
-            {
-              title: 'Version',
-              value: '1.0.0 (Phase 3)',
-              icon: 'info',
-            },
-            {
-              title: 'Technology Stack',
-              subtitle: 'React Native, Expo Router, Zustand, MMKV',
-              icon: 'code',
-            },
-            {
-              title: 'Privacy Notice',
-              subtitle: 'All data is stored purely locally on your device.',
-              icon: 'shield',
-            },
-            {
-              title: 'Developer',
-              value: 'Senior Staff Engineer',
-              icon: 'user',
-            },
-          ]}
-          style={styles.group}
-        />
+
+
 
         <SettingsGroup
           title="Danger Zone"
@@ -103,7 +147,7 @@ export default function SettingsScreen() {
               subtitle: 'Permanently delete all tracking history',
               icon: 'trash-2',
               isDestructive: true,
-              onPress: () => {}, // Disabled until logic phase
+              onPress: handleResetData,
             },
           ]}
           style={styles.dangerGroup}
@@ -112,6 +156,17 @@ export default function SettingsScreen() {
         {/* Bottom spacing for scrolling past the tab bar nicely */}
         <View style={styles.bottomSpacer} />
       </FadeIn>
+
+      <PromptModal
+        isVisible={isPromptVisible}
+        title="Cost per Cigarette"
+        message="Enter the exact cost of a single cigarette to calculate your total money wasted over time."
+        placeholder="e.g. 0.50"
+        defaultValue={costPerCigarette > 0 ? costPerCigarette.toString() : ''}
+        keyboardType="decimal-pad"
+        onConfirm={handleSaveCost}
+        onCancel={() => setPromptVisible(false)}
+      />
     </ScreenContainer>
   );
 }

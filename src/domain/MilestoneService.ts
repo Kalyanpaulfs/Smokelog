@@ -1,5 +1,6 @@
 export interface Milestone {
   label: string;
+  description: string;
   thresholdMs: number;
 }
 
@@ -13,14 +14,14 @@ export interface MilestoneProgress {
 }
 
 const MILESTONES: Milestone[] = [
-  { label: '20 minutes', thresholdMs: 20 * 60 * 1000 },
-  { label: '12 hours', thresholdMs: 12 * 60 * 60 * 1000 },
-  { label: '24 hours', thresholdMs: 24 * 60 * 60 * 1000 },
-  { label: '48 hours', thresholdMs: 48 * 60 * 60 * 1000 },
-  { label: '72 hours', thresholdMs: 72 * 60 * 60 * 1000 },
-  { label: '1 week', thresholdMs: 7 * 24 * 60 * 60 * 1000 },
-  { label: '2 weeks', thresholdMs: 14 * 24 * 60 * 60 * 1000 },
-  { label: '1 month', thresholdMs: 30 * 24 * 60 * 60 * 1000 },
+  { label: '20 minutes', description: 'Your heart rate and blood pressure will drop back to normal levels.', thresholdMs: 20 * 60 * 1000 },
+  { label: '12 hours', description: 'Carbon monoxide levels in your blood will drop to normal.', thresholdMs: 12 * 60 * 60 * 1000 },
+  { label: '24 hours', description: 'Your risk of having a heart attack will begin to drop.', thresholdMs: 24 * 60 * 60 * 1000 },
+  { label: '48 hours', description: 'Nerve endings will begin to regrow. Your sense of smell and taste will improve.', thresholdMs: 48 * 60 * 60 * 1000 },
+  { label: '72 hours', description: 'Your bronchial tubes will relax, making breathing significantly easier.', thresholdMs: 72 * 60 * 60 * 1000 },
+  { label: '1 week', description: 'Your blood circulation will improve. Walking will become much easier.', thresholdMs: 7 * 24 * 60 * 60 * 1000 },
+  { label: '2 weeks', description: 'Your overall lung function will improve by up to 30%.', thresholdMs: 14 * 24 * 60 * 60 * 1000 },
+  { label: '1 month', description: 'Coughing and shortness of breath will decrease as your energy levels surge.', thresholdMs: 30 * 24 * 60 * 60 * 1000 },
 ];
 
 /**

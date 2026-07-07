@@ -78,7 +78,8 @@ export const Button = React.memo(({
 
   const getTextColor = () => {
     if (isDisabled) return colors.disabled;
-    if (variant === 'primary' || variant === 'danger') return colors.white;
+    if (variant === 'primary') return colors.background;
+    if (variant === 'danger') return colors.white;
     return colors.textPrimary;
   };
 

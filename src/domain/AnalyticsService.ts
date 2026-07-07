@@ -6,6 +6,9 @@ export interface Insights {
   todaysTotal: number;
   longestInterval: number; // in milliseconds
   averageInterval: number; // in milliseconds
+  dailyAverage: number;
+  daysTracked: number;
+  last7DaysTrend: number[]; // Array of exactly 7 integers representing count per day, oldest to newest
 }
 
 export interface HistorySectionData {
@@ -26,7 +29,15 @@ export const AnalyticsService = {
   calculateInsights: (logs: SmokeLog[]): Insights => {
     const totalLogged = logs.length;
     if (totalLogged === 0) {
-      return { totalLogged: 0, todaysTotal: 0, longestInterval: 0, averageInterval: 0 };
+      return { 
+        totalLogged: 0, 
+        todaysTotal: 0, 
+        longestInterval: 0, 
+        averageInterval: 0, 
+        dailyAverage: 0, 
+        daysTracked: 0,
+        last7DaysTrend: [0, 0, 0, 0, 0, 0, 0] 
+      };
     }
 
     const now = ClockService.now();
@@ -67,11 +78,34 @@ export const AnalyticsService = {
     // Average requires at least 2 logs to have an interval
     const averageInterval = totalLogged > 1 ? totalIntervals / (totalLogged - 1) : 0;
 
+    // Calculate daily average
+    const firstLog = logs[logs.length - 1];
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const elapsedMsSinceFirstLog = now - firstLog.timestamp;
+    const daysSinceFirstLog = Math.max(1, Math.ceil(elapsedMsSinceFirstLog / msPerDay));
+    const dailyAverage = Math.round((totalLogged / daysSinceFirstLog) * 10) / 10; // Round to 1 decimal place
+
+    // Calculate 7-day trend (0 is 6 days ago, 6 is today)
+    const msPerDayValue = 24 * 60 * 60 * 1000;
+    const last7DaysTrend = [0, 0, 0, 0, 0, 0, 0];
+    
+    logs.forEach((log) => {
+      const msAgo = now - log.timestamp;
+      const daysAgo = Math.floor(msAgo / msPerDayValue);
+      if (daysAgo >= 0 && daysAgo < 7) {
+        // Index 6 is today (daysAgo = 0). Index 0 is 6 days ago (daysAgo = 6).
+        last7DaysTrend[6 - daysAgo]++;
+      }
+    });
+
     return {
       totalLogged,
       todaysTotal,
       longestInterval,
       averageInterval,
+      dailyAverage,
+      daysTracked: daysSinceFirstLog,
+      last7DaysTrend,
     };
   },
 

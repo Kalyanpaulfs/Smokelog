@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
@@ -7,12 +7,12 @@ import { DashboardTimerContainer } from '../../components/feature/dashboard/Dash
 import { LogSmokeButton } from '../../components/feature/dashboard/LogSmokeButton';
 import { ProgressCard } from '../../components/feature/dashboard/ProgressCard';
 import { InsightGrid } from '../../components/feature/dashboard/InsightGrid';
-import { MotivationCard } from '../../components/feature/dashboard/MotivationCard';
 import { SmokeConfirmationSheet } from '../../components/feature/dashboard/SmokeConfirmationSheet';
 import { FadeIn } from '../../components/animations/FadeIn';
 import { Spacing } from '../../theme';
 import { useSmokeStore } from '../../store/smokeStore';
 import { ValidationError, StorageError } from '../../domain/errors';
+import { AnalyticsService } from '../../domain/AnalyticsService';
 
 export default function DashboardScreen() {
   const { logs, latestLog, logSmoke } = useSmokeStore();
@@ -24,6 +24,9 @@ export default function DashboardScreen() {
   
   // First log timestamp is the absolute last element in the newest-first sorted array
   const firstLogTimestamp = isEmpty ? undefined : logs[logs.length - 1].timestamp;
+
+  // Memoize the analytics calculations so they only recalculate when logs change
+  const insights = useMemo(() => AnalyticsService.calculateInsights(logs), [logs]);
 
   const handleLogPress = () => {
     setSheetVisible(true);
@@ -69,14 +72,16 @@ export default function DashboardScreen() {
         </View>
 
         <SectionHeader title="Today's Progress" />
-        <ProgressCard isEmpty={isEmpty} isLoading={isLoading} />
+        <ProgressCard 
+          isEmpty={isEmpty} 
+          isLoading={isLoading} 
+          smokedToday={insights.todaysTotal}
+          average={insights.dailyAverage}
+        />
 
         <SectionHeader title="Quick Insights" />
         <InsightGrid logs={logs} isEmpty={isEmpty} />
         
-        <View style={styles.motivationSection}>
-          <MotivationCard firstLogTimestamp={firstLogTimestamp} isEmpty={isEmpty} />
-        </View>
         
         {/* Bottom spacer to ensure scrolling clears the tab bar comfortably */}
         <View style={styles.bottomSpacer} />
@@ -98,9 +103,6 @@ const styles = StyleSheet.create({
   },
   topSection: {
     marginTop: Spacing.xl,
-  },
-  motivationSection: {
-    marginTop: Spacing.sm,
   },
   bottomSpacer: {
     height: Spacing['3xl'],

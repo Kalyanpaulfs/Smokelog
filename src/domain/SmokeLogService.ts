@@ -63,4 +63,20 @@ export class SmokeLogService {
   public async getLogs(): Promise<SmokeLog[]> {
     return await this.repository.getLogs();
   }
+
+  /**
+   * Deletes a specific log.
+   */
+  public async deleteLog(id: string): Promise<void> {
+    if (this.isProcessing) {
+      throw new ValidationError('Action blocked: A log is currently being saved.');
+    }
+    
+    this.isProcessing = true;
+    try {
+      await this.repository.deleteLog(id);
+    } finally {
+      this.isProcessing = false;
+    }
+  }
 }

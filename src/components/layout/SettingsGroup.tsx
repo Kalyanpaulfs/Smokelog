@@ -43,7 +43,7 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = React.memo(({ title, 
   return (
     <View style={style}>
       {title && <SectionHeader title={title} />}
-      <View style={[styles.groupContainer, { backgroundColor: colors.surfaceHighlight }]}>
+      <View style={[styles.groupContainer, { backgroundColor: colors.surface }]}>
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           
@@ -60,11 +60,14 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = React.memo(({ title, 
               ]}
             >
               {item.icon && (
-                <View style={styles.iconContainer}>
+                <View style={[
+                  styles.iconWrapper, 
+                  { backgroundColor: item.isDestructive ? colors.danger + '15' : colors.primary + '15' }
+                ]}>
                   <Icon 
                     name={item.icon} 
-                    size="md" 
-                    color={item.isDestructive ? 'danger' : (item.iconColor || 'textSecondary')} 
+                    size="sm" 
+                    color={item.isDestructive ? 'danger' : 'primary'} 
                   />
                 </View>
               )}
@@ -73,6 +76,7 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = React.memo(({ title, 
                 <Text 
                   variant="body" 
                   color={item.isDestructive ? colors.danger : colors.textPrimary}
+                  style={{ fontWeight: '500' }}
                 >
                   {item.title}
                 </Text>
@@ -90,7 +94,9 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = React.memo(({ title, 
               )}
 
               {item.showChevron && (
-                <Icon name="chevron-right" size="md" color="textSecondary" />
+                <View style={styles.chevronContainer}>
+                  <Icon name="chevron-right" size="sm" color="textSecondary" />
+                </View>
               )}
             </Pressable>
           );
@@ -104,20 +110,23 @@ SettingsGroup.displayName = 'SettingsGroup';
 
 const styles = StyleSheet.create({
   groupContainer: {
-    marginHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    marginHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.xl,
     overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.lg,
-    minHeight: 56,
+    minHeight: 64,
   },
-  iconContainer: {
-    marginRight: Spacing.md,
-    width: 24,
+  iconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
   },
   contentContainer: {
     flex: 1,
@@ -129,4 +138,8 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
     marginRight: Spacing.xs,
   },
+  chevronContainer: {
+    marginLeft: Spacing.xs,
+    opacity: 0.5,
+  }
 });

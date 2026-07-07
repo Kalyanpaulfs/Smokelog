@@ -3,6 +3,7 @@ import { useLiveTimer } from '../../../hooks/use-live-timer';
 import { formatElapsedTime } from '../../../utils/time';
 import { TimerCard } from './TimerCard';
 import { HealthMilestoneCard } from './HealthMilestoneCard';
+import { MilestoneService } from '../../../domain/MilestoneService';
 
 export interface DashboardTimerContainerProps {
   /** The origin timestamp to track elapsed time from. If missing, renders empty state. */
@@ -26,10 +27,17 @@ export const DashboardTimerContainer: React.FC<DashboardTimerContainerProps> = (
   // Formatting strictly separated into presentation utility
   const formattedTime = formatElapsedTime(elapsedMilliseconds);
 
+  // Derive the current progress percentage for the circular ring
+  const milestoneData = React.useMemo(
+    () => MilestoneService.calculateMilestoneProgress(elapsedMilliseconds),
+    [elapsedMilliseconds]
+  );
+
   return (
     <>
       <TimerCard 
         timeSinceLast={formattedTime}
+        progress={milestoneData.progress}
         isEmpty={!hasLog}
         isLoading={isLoading}
       />

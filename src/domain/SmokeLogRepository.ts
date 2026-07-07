@@ -17,4 +17,11 @@ export interface SmokeLogRepository {
    * @param log The log to save.
    */
   saveLog(log: SmokeLog): Promise<void>;
+
+  /**
+   * Deletes a specific smoke log from storage.
+   * Throws a StorageError if the operation fails.
+   * @param id The id of the log to delete.
+   */
+  deleteLog(id: string): Promise<void>;
 }
