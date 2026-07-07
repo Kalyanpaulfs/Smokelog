@@ -13,7 +13,7 @@
         "buildType": "apk",
         "image": "latest"
       },
-      "node": "20.x"
+      "node": "20"
     },
     "production": {}
   },
