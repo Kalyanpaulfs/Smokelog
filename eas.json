@@ -10,8 +10,10 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
-      }
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "node": "20.x"
     },
     "production": {}
   },
