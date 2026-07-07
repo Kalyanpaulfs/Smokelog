@@ -1,0 +1,168 @@
+import React, { useEffect, useState } from 'react';
+import { Modal, StyleSheet, View, TouchableWithoutFeedback, Animated } from 'react-native';
+import { Text } from '../../ui/Text';
+import { Button } from '../../ui/Button';
+import { useTheme } from '../../../hooks/use-theme';
+import { Spacing, BorderRadius, Shadows, AnimationDurations } from '../../../theme';
+
+export interface SmokeConfirmationSheetProps {
+  /** Controls visibility of the sheet */
+  isVisible: boolean;
+  /** Action called when the user confirms their intent */
+  onConfirm: () => void;
+  /** Action called when the user taps cancel or the backdrop */
+  onCancel: () => void;
+  /** Whether the confirmation is currently processing */
+  isLoading?: boolean;
+}
+
+/**
+ * A reusable bottom sheet component that introduces intentional friction before logging.
+ * It contains purely UI logic and zero business/domain logic.
+ */
+export const SmokeConfirmationSheet: React.FC<SmokeConfirmationSheetProps> = React.memo(({
+  isVisible,
+  onConfirm,
+  onCancel,
+  isLoading,
+}) => {
+  const { colors } = useTheme();
+  
+  // Ref-less animation using state initializer to satisfy React strict mode safely
+  const [slideAnim] = useState(() => new Animated.Value(0));
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+
+  // Determine if we should render at all based on animation lifecycle
+  const [shouldRender, setShouldRender] = useState(isVisible);
+
+  useEffect(() => {
+    if (isVisible) {
+      setShouldRender(true);
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 1,
+          duration: AnimationDurations.normal,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: AnimationDurations.normal,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: AnimationDurations.normal,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: AnimationDurations.normal,
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (finished) {
+          setShouldRender(false);
+        }
+      });
+    }
+  }, [isVisible, slideAnim, fadeAnim]);
+
+  if (!shouldRender) return null;
+
+  return (
+    <Modal visible={shouldRender} transparent animationType="none" onRequestClose={onCancel}>
+      <TouchableWithoutFeedback onPress={onCancel} disabled={isLoading}>
+        <Animated.View style={[styles.backdrop, { opacity: fadeAnim, backgroundColor: colors.overlay }]} />
+      </TouchableWithoutFeedback>
+      
+      <Animated.View 
+        style={[
+          styles.sheetContainer,
+          { backgroundColor: colors.surfaceHighlight },
+          {
+            transform: [{
+              translateY: slideAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [300, 0],
+              })
+            }]
+          }
+        ]}
+      >
+        <View style={[styles.indicator, { backgroundColor: colors.border }]} />
+        
+        <Text variant="headline" align="center" style={styles.title}>
+          Log Activity
+        </Text>
+        
+        <Text variant="body" color={colors.textSecondary} align="center" style={styles.description}>
+          Take a breath. Are you sure you want to log another right now?
+        </Text>
+
+        <View style={styles.actions}>
+          <Button 
+            variant="secondary" 
+            label="Cancel" 
+            onPress={onCancel}
+            disabled={isLoading}
+            style={styles.button}
+          />
+          <Button 
+            variant="primary" 
+            label="Log It" 
+            onPress={onConfirm}
+            isLoading={isLoading}
+            style={styles.button}
+          />
+        </View>
+      </Animated.View>
+    </Modal>
+  );
+});
+
+SmokeConfirmationSheet.displayName = 'SmokeConfirmationSheet';
+
+const styles = StyleSheet.create({
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  sheetContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    paddingBottom: Spacing['3xl'] + Spacing.xl, // Safe area padding
+    ...Shadows.md,
+  },
+  indicator: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: Spacing.xl,
+  },
+  title: {
+    marginBottom: Spacing.md,
+  },
+  description: {
+    marginBottom: Spacing['3xl'],
+    paddingHorizontal: Spacing.md,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  button: {
+    flex: 1,
+  },
+});
