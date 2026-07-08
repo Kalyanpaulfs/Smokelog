@@ -27,13 +27,16 @@ export const LogSmokeButton: React.FC<LogSmokeButtonProps> = React.memo(({
 }) => {
   const { colors } = useTheme();
   const [trackWidth, setTrackWidth] = useState(0);
+  const maxTranslateRef = useRef(0);
   const pan = useRef(new Animated.Value(0)).current;
   const isTriggered = useRef(false);
 
   const maxTranslate = Math.max(0, trackWidth - THUMB_SIZE - (THUMB_PADDING * 2));
 
   const handleLayout = useCallback((e: LayoutChangeEvent) => {
-    setTrackWidth(e.nativeEvent.layout.width);
+    const width = e.nativeEvent.layout.width;
+    setTrackWidth(width);
+    maxTranslateRef.current = Math.max(0, width - THUMB_SIZE - (THUMB_PADDING * 2));
   }, []);
 
   const panResponder = useRef(
@@ -45,19 +48,20 @@ export const LogSmokeButton: React.FC<LogSmokeButtonProps> = React.memo(({
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       },
       onPanResponderMove: (e, gestureState) => {
-        if (isTriggered.current || maxTranslate <= 0) return;
+        const currentMax = maxTranslateRef.current;
+        if (isTriggered.current || currentMax <= 0) return;
         
         // Constrain movement within bounds
-        const newX = Math.max(0, Math.min(gestureState.dx, maxTranslate));
+        const newX = Math.max(0, Math.min(gestureState.dx, currentMax));
         pan.setValue(newX);
 
         // Haptic feedback as it slides
-        if (newX > 0 && newX < maxTranslate && newX % 50 < 2) {
+        if (newX > 0 && newX < currentMax && newX % 50 < 2) {
            Haptics.selectionAsync();
         }
 
         // Trigger action if reached end
-        if (newX >= maxTranslate * 0.95 && !isTriggered.current) {
+        if (newX >= currentMax * 0.95 && !isTriggered.current) {
           isTriggered.current = true;
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           onPress();
