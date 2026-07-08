@@ -56,7 +56,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = React.memo(({
       <View style={styles.metricBlock}>
         <View style={styles.valueRow}>
           <Ionicons name="flame" size={24} color={colors.primary} style={styles.iconOffset} />
-          <Text variant="display" color={colors.textPrimary} style={styles.numberValue}>
+          <Text variant="h2" color={colors.textPrimary} style={styles.numberValue}>
             {smokedToday}
           </Text>
         </View>
@@ -69,7 +69,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = React.memo(({
 
       <View style={styles.metricBlock}>
         <View style={styles.valueRow}>
-          <Text variant="display" color={colors.textPrimary} style={styles.numberValue}>
+          <Text variant="h2" color={colors.textPrimary} style={styles.numberValue}>
             {average}
           </Text>
         </View>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: Spacing.xl,
     borderRadius: BorderRadius.xl,
-    paddingVertical: Spacing.xl,
+    paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48, // Fixed height ensures numbers stay perfectly aligned regardless of icons
+    height: 40, // Fixed height ensures numbers stay perfectly aligned regardless of icons
     marginBottom: Spacing.xs,
   },
   iconOffset: {
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     marginTop: 4, // Slight visual adjustment to align with large text baseline
   },
   numberValue: {
-    lineHeight: 48,
+    lineHeight: 40,
   },
   label: {
     textTransform: 'uppercase',

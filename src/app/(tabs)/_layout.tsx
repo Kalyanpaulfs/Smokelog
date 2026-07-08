@@ -4,9 +4,11 @@ import { useTheme } from '../../hooks/use-theme';
 import { Icon } from '../../components/ui/Icon';
 import { Typography, Spacing } from '../../theme';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -17,8 +19,8 @@ export default function TabLayout() {
           borderTopColor: colors.border,
           borderTopWidth: 1,
           elevation: 0,
-          height: Platform.OS === 'ios' ? 88 : 68,
-          paddingBottom: Platform.OS === 'ios' ? 28 : Spacing.md,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.md,
           paddingTop: Spacing.xs,
         },
         tabBarActiveTintColor: colors.primary,

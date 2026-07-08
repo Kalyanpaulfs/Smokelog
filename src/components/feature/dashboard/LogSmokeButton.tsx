@@ -45,7 +45,7 @@ export const LogSmokeButton: React.FC<LogSmokeButtonProps> = React.memo(({
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       },
       onPanResponderMove: (e, gestureState) => {
-        if (isTriggered.current) return;
+        if (isTriggered.current || maxTranslate <= 0) return;
         
         // Constrain movement within bounds
         const newX = Math.max(0, Math.min(gestureState.dx, maxTranslate));
