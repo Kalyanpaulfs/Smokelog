@@ -51,12 +51,16 @@ export default function DashboardScreen() {
   };
 
   return (
-    <ScreenContainer scrollable withSafeArea={false}>
-      <ScreenHeader 
-        title="Dashboard" 
-        subtitle="Overview of your progress" 
-      />
-      
+    <ScreenContainer 
+      scrollable 
+      withSafeArea={false}
+      header={
+        <ScreenHeader 
+          title="Dashboard" 
+          subtitle="Overview of your progress" 
+        />
+      }
+    >
       <FadeIn delay={100} style={styles.content}>
         <View style={styles.topSection}>
           <DashboardTimerContainer 

@@ -11,6 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../hooks/use-theme';
 
 export interface ScreenContainerProps {
+  /** Optional fixed header to render above scrollable content */
+  header?: React.ReactNode;
   /** The content of the screen */
   children: React.ReactNode;
   /** Whether the screen should be scrollable */
@@ -32,6 +34,7 @@ export interface ScreenContainerProps {
  * Handles safe areas, scrolling, keyboard avoiding, and centering through a clean API.
  */
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
+  header,
   children,
   scrollable = false,
   centered = false,
@@ -91,6 +94,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 
   return (
     <Container style={[baseStyle, style]}>
+      {header}
       {content}
     </Container>
   );

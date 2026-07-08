@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, StyleSheet, Alert, Pressable, TouchableOpacity } from 'react-native';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { ScreenHeader } from '../../components/layout/ScreenHeader';
 import { SettingsGroup } from '../../components/layout/SettingsGroup';
@@ -66,24 +66,25 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScreenContainer scrollable withSafeArea={false}>
-      <ScreenHeader 
-        title="Settings" 
-        rightElement={
-          <Pressable 
-            onPress={handleThemeChange} 
-            hitSlop={8}
-            style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-          >
-            <Ionicons 
-              name={isDark ? 'sunny' : 'moon'} 
-              size={24} 
-              color={isDark ? colors.warning : colors.textSecondary} 
-            />
-          </Pressable>
-        }
-      />
-      
+    <ScreenContainer 
+      scrollable 
+      withSafeArea={false}
+      header={
+        <ScreenHeader 
+          title="Settings" 
+          subtitle="Manage your app preferences" 
+          rightElement={
+            <TouchableOpacity onPress={handleThemeChange} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons 
+                name={isDark ? 'sunny' : 'moon'} 
+                size={24} 
+                color={colors.textPrimary} 
+              />
+            </TouchableOpacity>
+          }
+        />
+      }
+    >
       <FadeIn delay={100} style={styles.content}>
         <SettingsGroup
           title="Financials"

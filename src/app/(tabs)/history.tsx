@@ -15,16 +15,22 @@ export default function HistoryScreen() {
   const groupedSections = useMemo(() => AnalyticsService.groupHistory(displayLogs), [displayLogs]);
 
   return (
-    <ScreenContainer withSafeArea={false}>
-      <ScreenHeader 
-        title="History" 
-        subtitle="Your complete tracking timeline" 
-      />
-      <HistoryList 
-        sections={groupedSections} 
-        isLoading={isLoading}
-        onEndReached={loadMoreHistory}
-      />
+    <ScreenContainer 
+      withSafeArea={false}
+      header={
+        <ScreenHeader 
+          title="History" 
+          subtitle="A complete timeline of your habit" 
+        />
+      }
+    >
+      <FadeIn delay={100} style={{ flex: 1 }}>
+        <HistoryList 
+          sections={groupedSections} 
+          isLoading={isLoading}
+          onEndReached={loadMoreHistory}
+        />
+      </FadeIn>
     </ScreenContainer>
   );
 }
