@@ -56,7 +56,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = React.memo(({
       <View style={styles.metricBlock}>
         <View style={styles.valueRow}>
           <Ionicons name="flame" size={24} color={colors.primary} style={styles.iconOffset} />
-          <Text variant="h2" color={colors.textPrimary} style={styles.numberValue}>
+          <Text variant="headline" color={colors.textPrimary} style={styles.numberValue}>
             {smokedToday}
           </Text>
         </View>
@@ -69,7 +69,7 @@ export const ProgressCard: React.FC<ProgressCardProps> = React.memo(({
 
       <View style={styles.metricBlock}>
         <View style={styles.valueRow}>
-          <Text variant="h2" color={colors.textPrimary} style={styles.numberValue}>
+          <Text variant="headline" color={colors.textPrimary} style={styles.numberValue}>
             {average}
           </Text>
         </View>
@@ -100,11 +100,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   metricBlock: {
-    flex: 1,
+    width: '48%',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
   },
   valueRow: {
     flexDirection: 'row',
@@ -134,6 +135,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: 1,
+    height: '80%',
     marginHorizontal: Spacing.md,
   },
   emptyContainer: {
